@@ -74,7 +74,6 @@ class DB
 // NOT WORKING
 class User {
   private $username;
-  private $password; // Hashed version
   private $connection;
 
   public function __construct($connection)
@@ -82,27 +81,93 @@ class User {
     $this->connection = $connection;
   }
 
-  private function CheckIfLoggedIn()
+  public function CheckIfLoggedIn()
   {
-    if (DontExist($_SESSION['username']) || DontExist($_SESSION['password']))
+    if (!SessionExists()) { return false; }
+    if (DontExist($_SESSION['usertoken']) || DontExist($_SESSION['tokenexpiry']))
     {
       return false;
     }
-    $storedusername = MakeSecure($_SESSION['username']);
-    $storedpassword = MakeSecure($_SESSION['password']);
+    $sessiontoken = MakeSecure($_SESSION['usertoken']);
+    $sessiontimeout = MakeSecure($_SESSION['tokenexpiry']);
 
     $conn = $this->connection;
-    $getpasswordquery = "SELECT password FROM accounts WHERE username = '$storedusername'";
-    $password = $conn->query($getpasswordquery);
+    $checktokenquery = "SELECT `userid` FROM `usertokens` WHERE `token` = '$sessiontoken'";
+    $userid = $conn->query($checktokenquery);
 
-    if (Exists($password))
+    if (Exists($userid))
     {
-      if (/*password match*/)
+      $getnamequery = "SELECT name FROM accounts WHERE id = '$userid'";
+      $name = $conn->query($getnamequery);
+      if (Exists($name))
+      {
+        var_dump($name);
+        $this->username = $name;
+        return true;
+      }
     }
-    // FINISH CHECKING IF PASSWORD MATCHES
+    return false;
+  }
+
+  public function Login($name, $password)
+  {
+    if ($this->CheckIfLoggedIn()) { $this->Logout(); }
+    if (!SessionExists()) { session_start(); }
+    if (DontExist($name) || DontExist($password))
+    {
+      echo "<h4> Login failed, password or name don't exist</h4>";
+      return;
+    }
+    if(DontExist($this->connection))
+    {
+      echo "<h4> Login failed, DB connection was bad</h4>";
+      return;
+    }
+
+    $conn = $this->connection;
+    $getpasswordquery = "SELECT password FROM accounts WHERE name = '$name'";
+    $dbpassword = $conn->query($getpasswordquery);
+
+    if (DontExist($dbpassword))
+    {
+      echo "<h4> Login Failed, user doesn't exist</h4>";
+      return;
+    }
+
+    if (password_verify($password, $dbpassword))
+    {
+      $token = bin2hex(random_bytes(16));
+      $rightnow = new DateTime(NULL, timezone_open("Pacific/Auckland"));
+      $expiresin = new DateTime("@360", timezone_open("Pacific/Auckland"));
+      $expiry = $rightnow + $expiresin;
+      var_dump($expiry);
+      var_dump($expiresin);
+      var_dump($rightnow);
+      $addtokenquery = "INSERT INTO `usertokens` (`token`,`expiry`) VALUES (x`$token`,`$expiry`)";
+
+    }
+  }
+
+  public function Register($name, $password, $rcode)
+  {
+    if (DontExist($this->connection)) { echo "<h4>DB Connection is bad</h4>"; return; }
+    $name = MakeSecure($name);
+    $password = MakeSecure($password);
+    $rcode = MakeSecure($rcode);
+
+    $conn = $this->connection;
+
+    $checkrcodequery = "SELECT expiry FROM `rcodes` WHERE `code` = `$rcode`";
+    $expiry = $conn->query($checkrcodequery);
+
+    var_dump($expiry);
 
   }
 
+  public function MakeReferralCode()
+  {
+    
+  }
 }
 
 
@@ -120,6 +185,16 @@ function DontExist($var)
 function Exists($var)
 {
   return !DontExist($var);
+}
+
+function SessionExists()
+{
+  return session_status() == PHP_SESSION_ACTIVE;
+}
+
+function GenerateRandomHex($bytes)
+{
+  return hex2bin(random_bytes($bytes));
 }
 
  ?>
