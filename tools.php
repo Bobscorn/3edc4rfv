@@ -83,8 +83,16 @@ class User {
 
   public function CheckIfLoggedIn()
   {
+    // Check if session or session variables don't exist
+    // Verify Variables
+    // Query Userid and expiry from token
+    // Check query result
+    // Check if expired
+    // Query the name from userid
+    // Check query result
+    // Set member variable name, return true
     if (!SessionExists()) { return false; }
-    if (DontExist($_SESSION['usertoken']) || DontExist($_SESSION['tokenexpiry']))
+    if (DontExist($_SESSION['usertoken']))
     {
       return false;
     }
@@ -92,16 +100,20 @@ class User {
     $sessiontimeout = MakeSecure($_SESSION['tokenexpiry']);
 
     $conn = $this->connection;
-    $checktokenquery = "SELECT `userid` FROM `usertokens` WHERE `token` = '$sessiontoken'";
-    $userid = $conn->query($checktokenquery);
+    $checktokenquery = "SELECT `userid`,`expiry` FROM `usertokens` WHERE `token` = '$sessiontoken'";
+    $result = $conn->query($checktokenquery);
 
-    if (Exists($userid))
+    if (Exists($result))
     {
+      $rightnow = new DateTime(NULL, timezone_open("Pacific/Auckland"));
+      if ($rightnow > $result['expiry']) { nEcho("Token has expired"); return false;}
+
+      $userid = $result['userid'];
       $getnamequery = "SELECT name FROM accounts WHERE id = '$userid'";
       $name = $conn->query($getnamequery);
       if (Exists($name))
       {
-        var_dump($name);
+        dump_var($name);
         $this->username = $name;
         return true;
       }
@@ -111,16 +123,21 @@ class User {
 
   public function Login($name, $password)
   {
+    // Check connection, session, and name + password
+    // Make and Execute Query (not preparing)
+    // Check Query result
+    // Check if passwords match
+    // Create token and expiry, add token to session and database
     if ($this->CheckIfLoggedIn()) { $this->Logout(); }
     if (!SessionExists()) { session_start(); }
     if (DontExist($name) || DontExist($password))
     {
-      echo "<h4> Login failed, password or name don't exist</h4>";
+      nEcho("Login failed, password or name don't exist");
       return;
     }
     if(DontExist($this->connection))
     {
-      echo "<h4> Login failed, DB connection was bad</h4>";
+      dEcho("Login failed, DB connection was bad");
       return;
     }
 
@@ -130,7 +147,7 @@ class User {
 
     if (DontExist($dbpassword))
     {
-      echo "<h4> Login Failed, user doesn't exist</h4>";
+      nEcho("No User by that name");
       return;
     }
 
@@ -140,33 +157,85 @@ class User {
       $rightnow = new DateTime(NULL, timezone_open("Pacific/Auckland"));
       $expiresin = new DateTime("@360", timezone_open("Pacific/Auckland"));
       $expiry = $rightnow + $expiresin;
-      var_dump($expiry);
-      var_dump($expiresin);
-      var_dump($rightnow);
+      dump_var($expiry);
+      dump_var($expiresin);
+      dump_var($rightnow);
       $addtokenquery = "INSERT INTO `usertokens` (`token`,`expiry`) VALUES (x`$token`,`$expiry`)";
 
     }
   }
 
+  public function Logout()
+  {
+    // Reset Member Variable
+    // Reset Session Variables
+    $this->username = '';
+    $_SESSION['usertoken'] = '';
+  }
+
   public function Register($name, $password, $rcode)
   {
-    if (DontExist($this->connection)) { echo "<h4>DB Connection is bad</h4>"; return; }
-    $name = MakeSecure($name);
+    // Check connection,
+    // Secure Parameters,
+    // Make & Execute Query (not preparing)
+    // Check Expiry + Get Referee
+    // Register using Referee
+    if (DontExist($this->connection)) { nEcho("DB Connection is bad"); return; }
+    $name     = MakeSecure($name);
     $password = MakeSecure($password);
-    $rcode = MakeSecure($rcode);
+    $rcode    = MakeSecure($rcode);
 
     $conn = $this->connection;
+    $checkrcodequery = "SELECT expiry, referee FROM `rcodes` WHERE `code` = `$rcode`";
+    $expireree = $conn->query($checkrcodequery);
+    $expiry = $expireree['expiry'];
+    $referee = $expireree['referee'];
 
-    $checkrcodequery = "SELECT expiry FROM `rcodes` WHERE `code` = `$rcode`";
-    $expiry = $conn->query($checkrcodequery);
+    dump_var($expiry);
 
-    var_dump($expiry);
+    $rightnow = new DateTime(NULL, timezone_open("Pacific/Auckland"));
+    if ($rightnow > $expiry)
+    {
+      nEcho("Code has expired");
+      return;
+    }
+    $hashedpassword = password_hash($password, PASSWORD_DEFAULT);
+    $registerquery = "INSERT INTO `accounts` (`name`,`password`,`referee`)
+                      VALUES (`$name`,`$hashedpassword`,`$referee`)";
+    $success = $conn->query($registerquery);
+
+    if ($success)
+    {
+      nEcho("Successfully created account '$name'");
+    }
 
   }
 
-  public function MakeReferralCode()
+  public function MakeWorkingReferralCode()
   {
-    
+    // Check connection
+    // Generate 20 byte long code
+    // Get expiry date (360 seconds from now)
+    // Make + Execute Query (not preparing)
+    // Return code if it worked
+    if (DontExist($this->connection)) { echo "<h4>Failed making referral code, db connection failure</h4>"; return; }
+
+    $code = GenerateRandomHex(20);
+
+    $rightnow = new DateTime(NULL, timezone_open("Pacific/Auckland"));
+    $extratime = new DateTime("@360", timezone_open("Pacific/Auckland"));
+    $expiry = $rightnow + $extratime;
+
+    $conn = $this->connection;
+    $addcodequery = "INSERT INTO `rcodes` (`code`,`expiry`) VALUES (`$code`,`$expiry`)";
+    $worked = $conn->query($addcodequery);
+
+    if ($worked)
+    {
+      return $code;
+    }
+
+    return 'Failed to create code';
   }
 }
 
@@ -195,6 +264,24 @@ function SessionExists()
 function GenerateRandomHex($bytes)
 {
   return hex2bin(random_bytes($bytes));
+}
+
+function dump_var($var)
+{
+  // Debug checkpoint, this way if I want to disable debug output I just comment the next line
+  var_dump($var);
+}
+
+function dEcho($var)
+{
+  // Debug checkpoint, all echoed debug output goes through here, so easier to disable
+  echo "<h4>$var</h4>";
+}
+
+function nEcho($var)
+{
+  // Provides a way of formatting output before it gets echoed
+  echo "<h4>$var</h4>";
 }
 
  ?>
