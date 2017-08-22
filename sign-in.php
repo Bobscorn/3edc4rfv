@@ -17,6 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
         echo "<h4> Username or password invalid </h4>";
         break;
       }
+      nEcho("Logging in");
       $user->Login($name, $password);
 
       break;

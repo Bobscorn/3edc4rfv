@@ -91,30 +91,42 @@ class User {
     // Query the name from userid
     // Check query result
     // Set member variable name, return true
-    if (!SessionExists()) { return false; }
-    if (DontExist($_SESSION['usertoken']))
+    nEcho("In echo check");
+    if (!SessionExists())
     {
+      session_start();
+    }
+    if (!isset($_SESSION['usertoken']))
+    {
+      dEcho("User token not set");
       return false;
     }
     $sessiontoken = MakeSecure($_SESSION['usertoken']);
-    $sessiontimeout = MakeSecure($_SESSION['tokenexpiry']);
+
 
     $conn = $this->connection;
     $checktokenquery = "SELECT `userid`,`expiry` FROM `usertokens` WHERE `token` = '$sessiontoken'";
     $result = $conn->query($checktokenquery);
+    dump_var($result);
 
     if (Exists($result))
     {
       $rightnow = new DateTime(NULL, timezone_open("Pacific/Auckland"));
-      if ($rightnow > $result['expiry']) { nEcho("Token has expired"); return false;}
+      $resultarr = $result->fetch_assoc();
+      $expiry = $resultarr['expiry'];
+      
+      dEcho("Expiry: $expiry");
+      if ($rightnow > $expiry) { nEcho("Login Token has expired, Please login again"); return false;}
 
       $userid = $result['userid'];
       $getnamequery = "SELECT name FROM accounts WHERE id = '$userid'";
       $name = $conn->query($getnamequery);
       if (Exists($name))
       {
+        dEcho("Pre thing");
         dump_var($name);
-        $this->username = $name;
+        dEcho("Post Thing");
+        $this->username = $name->fetch_assoc()['name'];
         return true;
       }
     }
@@ -127,41 +139,50 @@ class User {
     // Make and Execute Query (not preparing)
     // Check Query result
     // Check if passwords match
-    // Create token and expiry, add token to session and database
+    // Get UserID
+    // Create token with expiry and uid, add token to session and database
     if ($this->CheckIfLoggedIn()) { $this->Logout(); }
     if (!SessionExists()) { session_start(); }
-    if (DontExist($name) || DontExist($password))
+    if (!isset($name) || !isset($password))
     {
       nEcho("Login failed, password or name don't exist");
       return;
     }
-    if(DontExist($this->connection))
+    if(!isset($this->connection))
     {
-      dEcho("Login failed, DB connection was bad");
+      dEcho("Login failed, No DB Connection");
       return;
     }
 
     $conn = $this->connection;
-    $getpasswordquery = "SELECT password FROM accounts WHERE name = '$name'";
-    $dbpassword = $conn->query($getpasswordquery);
+    $getpasswordquery = "SELECT `password`, `id` FROM `accounts` WHERE `name` = '$name'";
+    $thing = $conn->query($getpasswordquery);
 
+    $thingrow = $thing->fetch_assoc();
+    $dbpassword = $thingrow['password'];
     if (DontExist($dbpassword))
     {
       nEcho("No User by that name");
       return;
     }
 
+    $uid = $thingrow['id'];
     if (password_verify($password, $dbpassword))
     {
       $token = bin2hex(random_bytes(16));
+      dEcho("Token is: $token");
       $rightnow = new DateTime(NULL, timezone_open("Pacific/Auckland"));
-      $expiresin = new DateTime("@360", timezone_open("Pacific/Auckland"));
-      $expiry = $rightnow + $expiresin;
+      $expiresin = new DateInterval('PT5M'); // 5 Minutes
+      $expiry = date_add($rightnow, $expiresin); // Make expiry 5 minutes from now
       dump_var($expiry);
       dump_var($expiresin);
       dump_var($rightnow);
-      $addtokenquery = "INSERT INTO `usertokens` (`token`,`expiry`) VALUES (x`$token`,`$expiry`)";
-
+      $expirystring = $expiry->format("Y/m/d H:i:s");
+      $addtokenquery = "INSERT INTO `usertokens` (`token`,`userid`,`expiry`) VALUES (X'$token','$uid','$expirystring')";
+      nEcho("Thing: $addtokenquery");
+      $_SESSION['usertoken'] = $token;
+      $success = $conn->query($addtokenquery);
+      if (Exists($success)) { nEcho("Logged in, $name"); }
     }
   }
 
@@ -223,10 +244,11 @@ class User {
     $code = GenerateRandomHex(20);
 
     $rightnow = new DateTime(NULL, timezone_open("Pacific/Auckland"));
-    $extratime = new DateTime("@360", timezone_open("Pacific/Auckland"));
-    $expiry = $rightnow + $extratime;
+    $extratime = new DateInterval("PT5M");
+    $expiry = $rightnow->Add($extratime);
 
     $conn = $this->connection;
+    $expirystring = $expiry->format("Y/m/d H:i:s");
     $addcodequery = "INSERT INTO `rcodes` (`code`,`expiry`) VALUES (`$code`,`$expiry`)";
     $worked = $conn->query($addcodequery);
 
@@ -243,7 +265,9 @@ class User {
 function MakeSecure($var)
 {
   $var = trim($var);
-  //$var = ;
+  $var = htmlspecialchars($var);
+  $var = preg_replace("/[^A-Za-z0-9 ]/i", "", $var);
+  return $var;
 }
 
 function DontExist($var)
@@ -253,6 +277,13 @@ function DontExist($var)
 
 function Exists($var)
 {
+  if (method_exists($var, 'fetch_assoc'))
+  {
+    $rowcount = $var->num_rows;
+    dEcho("Row Count: $rowcount");
+    dump_var($var);
+    return $var->num_rows > 0;
+  }
   return !DontExist($var);
 }
 
