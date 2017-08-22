@@ -105,20 +105,22 @@ class User {
 
 
     $conn = $this->connection;
-    $checktokenquery = "SELECT `userid`,`expiry` FROM `usertokens` WHERE `token` = '$sessiontoken'";
+    $checktokenquery = "SELECT `userid`,`expiry` FROM `usertokens` WHERE `token` = X'$sessiontoken'";
     $result = $conn->query($checktokenquery);
     dump_var($result);
+    dump_var($checktokenquery);
 
     if (Exists($result))
     {
       $rightnow = new DateTime(NULL, timezone_open("Pacific/Auckland"));
       $resultarr = $result->fetch_assoc();
       $expiry = $resultarr['expiry'];
-      
-      dEcho("Expiry: $expiry");
-      if ($rightnow > $expiry) { nEcho("Login Token has expired, Please login again"); return false;}
 
-      $userid = $result['userid'];
+      dEcho("Expiry: $expiry");
+      $expiryobj = new DateTime($expiry, timezone_open("Pacific/Auckland"));
+      if ($rightnow > $expiryobj) { nEcho("Login Token has expired, Please login again"); return false;}
+
+      $userid = $resultarr['userid'];
       $getnamequery = "SELECT name FROM accounts WHERE id = '$userid'";
       $name = $conn->query($getnamequery);
       if (Exists($name))
@@ -174,12 +176,15 @@ class User {
       $rightnow = new DateTime(NULL, timezone_open("Pacific/Auckland"));
       $expiresin = new DateInterval('PT5M'); // 5 Minutes
       $expiry = date_add($rightnow, $expiresin); // Make expiry 5 minutes from now
+
       dump_var($expiry);
       dump_var($expiresin);
       dump_var($rightnow);
+
       $expirystring = $expiry->format("Y/m/d H:i:s");
+
       $addtokenquery = "INSERT INTO `usertokens` (`token`,`userid`,`expiry`) VALUES (X'$token','$uid','$expirystring')";
-      nEcho("Thing: $addtokenquery");
+
       $_SESSION['usertoken'] = $token;
       $success = $conn->query($addtokenquery);
       if (Exists($success)) { nEcho("Logged in, $name"); }
@@ -207,7 +212,7 @@ class User {
     $rcode    = MakeSecure($rcode);
 
     $conn = $this->connection;
-    $checkrcodequery = "SELECT expiry, referee FROM `rcodes` WHERE `code` = `$rcode`";
+    $checkrcodequery = "SELECT `expiry`, `referee` FROM `rcodes` WHERE `code` = '$rcode'";
     $expireree = $conn->query($checkrcodequery);
     $expiry = $expireree['expiry'];
     $referee = $expireree['referee'];
@@ -222,7 +227,7 @@ class User {
     }
     $hashedpassword = password_hash($password, PASSWORD_DEFAULT);
     $registerquery = "INSERT INTO `accounts` (`name`,`password`,`referee`)
-                      VALUES (`$name`,`$hashedpassword`,`$referee`)";
+                      VALUES ('$name','$hashedpassword','$referee')";
     $success = $conn->query($registerquery);
 
     if ($success)
@@ -284,7 +289,10 @@ function Exists($var)
     dump_var($var);
     return $var->num_rows > 0;
   }
-  return !DontExist($var);
+  else
+  {
+    return !DontExist($var);
+  }
 }
 
 function SessionExists()
