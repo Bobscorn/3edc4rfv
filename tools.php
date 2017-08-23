@@ -96,7 +96,7 @@ class User {
     {
       session_start();
     }
-    if (!isset($_SESSION['usertoken']))
+    if (!isset($_SESSION['usertoken']) || $_SESSION['usertoken'] == '')
     {
       dEcho("User token not set");
       return false;
@@ -112,23 +112,30 @@ class User {
 
     if (Exists($result))
     {
+      dEcho("Check token result:");
+      dump_var($result);
       $rightnow = new DateTime(NULL, timezone_open("Pacific/Auckland"));
       $resultarr = $result->fetch_assoc();
       $expiry = $resultarr['expiry'];
 
       dEcho("Expiry: $expiry");
       $expiryobj = new DateTime($expiry, timezone_open("Pacific/Auckland"));
-      if ($rightnow > $expiryobj) { nEcho("Login Token has expired, Please login again"); return false;}
+      if ($rightnow > $expiryobj) { nEcho("Login Token has expired, Please login again"); $this->Logout(); return false;}
 
       $userid = $resultarr['userid'];
       $getnamequery = "SELECT name FROM accounts WHERE id = '$userid'";
       $name = $conn->query($getnamequery);
       if (Exists($name))
       {
-        dEcho("Pre thing");
+        dEcho("Get Game result:");
         dump_var($name);
-        dEcho("Post Thing");
+        $usertoken = $_SESSION['usertoken'];
+        dump_var($name);
         $this->username = $name->fetch_assoc()['name'];
+        dEcho("Name: $this->username");
+        dEcho("Login check returned true");
+        dEcho("User token: $usertoken");
+        dump_var($_SESSION);
         return true;
       }
     }
@@ -143,8 +150,8 @@ class User {
     // Check if passwords match
     // Get UserID
     // Create token with expiry and uid, add token to session and database
-    if ($this->CheckIfLoggedIn()) { $this->Logout(); }
     if (!SessionExists()) { session_start(); }
+    if (isset($_SESSION['usertoken'])) { $this->Logout(); }
     if (!isset($name) || !isset($password))
     {
       nEcho("Login failed, password or name don't exist");
@@ -187,6 +194,7 @@ class User {
 
       $_SESSION['usertoken'] = $token;
       $success = $conn->query($addtokenquery);
+      $this->username = $name;
       if (Exists($success)) { nEcho("Logged in, $name"); }
     }
   }
@@ -195,8 +203,17 @@ class User {
   {
     // Reset Member Variable
     // Reset Session Variables
+    if (!SessionExists()) { session_start(); }
+    dEcho("Logging out");
     $this->username = '';
-    $_SESSION['usertoken'] = '';
+    if (isset($_SESSION['usertoken'])) {
+      $_SESSION['usertoken'] = '';
+      unset($_SESSION['usertoken']);
+      dEcho("Unsetting utoken");
+      $utoken = $_SESSION['usertoken'];
+      dEcho("Token: $utoken");
+    }
+    dump_var($_SESSION);
   }
 
   public function Register($name, $password, $rcode)
@@ -211,23 +228,36 @@ class User {
     $password = MakeSecure($password);
     $rcode    = MakeSecure($rcode);
 
-    $conn = $this->connection;
-    $checkrcodequery = "SELECT `expiry`, `referee` FROM `rcodes` WHERE `code` = '$rcode'";
-    $expireree = $conn->query($checkrcodequery);
-    $expiry = $expireree['expiry'];
-    $referee = $expireree['referee'];
+    dEcho("RCode: $rcode");
 
-    dump_var($expiry);
+    $conn             = $this->connection;
+    $checkrcodequery  = "SELECT `expiry`,`refereeid` FROM `rcodes` WHERE `code` = X'$rcode'";
+    $expireree        = $conn->query($checkrcodequery);
 
-    $rightnow = new DateTime(NULL, timezone_open("Pacific/Auckland"));
-    if ($rightnow > $expiry)
+    if (!Exists($expireree)) { nEcho("No matching referral code found"); return; }
+
+    $expirereedata  = $expireree->fetch_assoc();
+    $expirystr      = $expirereedata['expiry'];
+    $refereeid      = $expirereedata['refereeid'];
+
+    dump_var($expirystr);
+
+    $expiryobj  = new DateTime($expirystr, timezone_open("Pacific/Auckland"));
+    $rightnow   = new DateTime(NULL, timezone_open("Pacific/Auckland"));
+
+    if ($rightnow > $expiryobj)
     {
       nEcho("Code has expired");
       return;
     }
+
+    $getrefereenamequery = "SELECT `name` FROM `accounts` WHERE `id` = '$refereeid'";
+    $refereesql = $conn->query($getrefereenamequery);
+    $refereename = $refereesql->fetch_assoc()['name'];
+
     $hashedpassword = password_hash($password, PASSWORD_DEFAULT);
-    $registerquery = "INSERT INTO `accounts` (`name`,`password`,`referee`)
-                      VALUES ('$name','$hashedpassword','$referee')";
+    $registerquery  = "INSERT INTO `accounts` (`name`,`password`,`referee`)
+                       VALUES ('$name','$hashedpassword','$refereename')";
     $success = $conn->query($registerquery);
 
     if ($success)
@@ -240,21 +270,33 @@ class User {
   public function MakeWorkingReferralCode()
   {
     // Check connection
-    // Generate 20 byte long code
-    // Get expiry date (360 seconds from now)
+    // Generate 16 byte long code
+    // Get expiry date (which will be 5 minutes from now)
     // Make + Execute Query (not preparing)
     // Return code if it worked
     if (DontExist($this->connection)) { echo "<h4>Failed making referral code, db connection failure</h4>"; return; }
+    if (!isset($this->username) || $this->username == '') { nEcho("Cannot create Referral Code: No user logged in"); return; }
+    $conn = $this->connection;
 
-    $code = GenerateRandomHex(20);
+    $code = GenerateRandomHex(16);
 
     $rightnow = new DateTime(NULL, timezone_open("Pacific/Auckland"));
     $extratime = new DateInterval("PT5M");
-    $expiry = $rightnow->Add($extratime);
+    $expiry = date_add($rightnow, $extratime);
 
     $conn = $this->connection;
     $expirystring = $expiry->format("Y/m/d H:i:s");
-    $addcodequery = "INSERT INTO `rcodes` (`code`,`expiry`) VALUES (`$code`,`$expiry`)";
+
+    $getuidquery = "SELECT `id` FROM `accounts` WHERE name = '$this->username'";
+    $useridsql = $conn->query($getuidquery);
+    if (!Exists($useridsql))
+    {
+      dEcho("Failed to get UserID of current account");
+      return;
+    }
+    $userid = $useridsql->fetch_assoc()['id'];
+
+    $addcodequery = "INSERT INTO `rcodes` (`code`,`expiry`,`refereeid`) VALUES (X'$code','$expirystring','$userid')";
     $worked = $conn->query($addcodequery);
 
     if ($worked)
@@ -284,9 +326,6 @@ function Exists($var)
 {
   if (method_exists($var, 'fetch_assoc'))
   {
-    $rowcount = $var->num_rows;
-    dEcho("Row Count: $rowcount");
-    dump_var($var);
     return $var->num_rows > 0;
   }
   else
@@ -302,7 +341,7 @@ function SessionExists()
 
 function GenerateRandomHex($bytes)
 {
-  return hex2bin(random_bytes($bytes));
+  return bin2hex(random_bytes($bytes));
 }
 
 function dump_var($var)

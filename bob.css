@@ -1,0 +1,99 @@
+html {
+  background-color: #444;
+}
+
+#phpoutput
+{
+  text-align: center;
+  color: #ddd;
+}
+
+#formholder
+{
+  text-align: center;
+  width: 25%;
+  margin: 0 auto 0 auto;
+}
+
+#swapFormButton
+{
+  border-color: #333;
+  background-color: #222;
+  color: #fff;
+  font-weight: bolder;
+  display: block;
+  margin: 0 auto;
+}
+
+input
+{
+  display: block;
+  border-style: solid;
+  border-color: #999;
+}
+
+.topinput
+{
+  border-left-color: #445;
+  border-top-color: #445;
+  border-right-color: #999;
+  border-bottom-color: #999;
+}
+
+.bottominput
+{
+  border-left-color: #999;
+  border-top-color: #999;
+  border-right-color: #445;
+  border-bottom-color: #445;
+}
+
+.fullinput
+{
+  border-left-color: #445;
+  border-top-color: #445;
+  border-right-color: #445;
+  border-bottom-color: #445;
+}
+
+.submit
+{
+  border-color: #333;
+  background-color: #222;
+  color: #fff;
+  font-weight: bolder;
+  margin: 0 auto;
+}
+
+.inlineinput
+{
+  display: inline;
+}
+
+#searchid1, #searchid2, #searchid3
+{
+  display: inline;
+}
+
+legend
+{
+  font-weight: bolder;
+  color: #fff;
+  text-align: center;
+}
+
+form
+{
+  display:  flex;
+  margin: 0 auto;
+  border: none;
+}
+
+fieldset
+{
+  background-color: #777;
+  border-style: solid;
+  border-width: medium;
+  border-spacing: 0;
+  border-color: #333;
+}
