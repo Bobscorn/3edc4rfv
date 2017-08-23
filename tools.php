@@ -91,7 +91,7 @@ class User {
     // Query the name from userid
     // Check query result
     // Set member variable name, return true
-    nEcho("In echo check");
+    dEcho("In echo check");
     if (!SessionExists())
     {
       session_start();
@@ -136,6 +136,16 @@ class User {
         dEcho("Login check returned true");
         dEcho("User token: $usertoken");
         dump_var($_SESSION);
+
+        // Renew token
+        $rightnow = new DateTime(NULL, timezone_open("Pacific/Auckland"));
+        $in5minutes = new DateInterval("PT5M");
+        $newexpiry = date_add($rightnow, $in5minutes);
+        $newexpirystring = $newexpiry->format("Y/m/d H:i:s");
+        $renewtokenquery = "UPDATE `usertokens` SET `expiry` = '$newexpirystring' WHERE `userid` = '$userid'";
+        dEcho("Renew query: $renewtokenquery");
+        dEcho("Login Token Renewed");
+        $success = $conn->query($renewtokenquery);
         return true;
       }
     }
@@ -210,8 +220,6 @@ class User {
       $_SESSION['usertoken'] = '';
       unset($_SESSION['usertoken']);
       dEcho("Unsetting utoken");
-      $utoken = $_SESSION['usertoken'];
-      dEcho("Token: $utoken");
     }
     dump_var($_SESSION);
   }
@@ -306,6 +314,11 @@ class User {
 
     return 'Failed to create code';
   }
+
+  public function GetName()
+  {
+    return $this->username;
+  }
 }
 
 
@@ -347,13 +360,13 @@ function GenerateRandomHex($bytes)
 function dump_var($var)
 {
   // Debug checkpoint, this way if I want to disable debug output I just comment the next line
-  var_dump($var);
+  //var_dump($var);
 }
 
 function dEcho($var)
 {
   // Debug checkpoint, all echoed debug output goes through here, so easier to disable
-  echo "<h4>$var</h4>";
+  //echo "<h4>$var</h4>";
 }
 
 function nEcho($var)

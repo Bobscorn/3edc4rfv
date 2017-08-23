@@ -23,19 +23,13 @@ function swapForms()
 
 function searchClicked(number)
 {
-/*  switch (number)
-  {
-  case '1':
-    var id = document.getElementById('searchid1').value;
-    document.getElementById('orderid').value = id;
-    break;
-  case '2':
-    var id = document.getElementById('searchid2').value;
-    document.getElementById('orderid').value = id;
-    break;*/
-//  case '3':
-    var id = document.getElementById('searchid'+number.toString()).value;
-    document.getElementById('orderid').value = id;
-//    break;
-  }
+  var id = document.getElementById('searchid'+number).value;
+  document.getElementById('orderid').value = id;
+}
+
+function lastestOrders()
+{
+  alert("deez nuts");
+  document.getElementById('theiframe').src = 'orderslatest.php';
+  document.getElementById('theiframe').style.display = 'block';
 }

@@ -16,11 +16,12 @@ $user = new User($connection);
 
 $buttoncontent = $loginvisible ? 'Wanting to Register?' : 'Looking for Login?';
 
-nEcho("Before Login check");
+dEcho("Before Login check");
 $loggedin = $user->CheckIfLoggedIn();
-nEcho("After Login check");
+dEcho("After Login check");
 dump_var($loggedin);
 
+if (!isset($searchthing)) { $searchthing = ''; }
 if (!isset($sr1display)) { $sr1display = 'none'; }
 if (!isset($sid1display)) { $sid1display = 'none'; }
 if (!isset($searchr1)) { $searchr1 = ''; }
@@ -66,42 +67,38 @@ if ($loggedin)
   echo "
 <form action='site.php' method='post'>
   <fieldset>
-    <legend>Formname</legend>
-    <input type='' name=''>
-  </fieldset>
-</form>
-<form action='site.php' method='post'>
-  <fieldset>
-    <legend>Account</legend>
-    <input type='submit' class='submit' name='formname' value='Logout'>
-    <input type='submit' class='submit' name='formname' value='Create Referral Code'>
-    <input type='submit' class='submit' name='formname' value='none'>
-  </fieldset>
-</form>
-<form action='site.php' method='post'>
-  <fieldset>
     <legend>Search</legend>
-    <input type='text' class='fullinput' name='search' required>
+    <input type='text' class='fullinput' name='search' placeholder='Search' value='$searchthing' required>
     <input type='submit' class='submit inlineinput' name='formname' value='Search'>
     <input type='submit' class='submit inlineinput' name='formname' value='Add Item'>
     <div id='searchresult1' style='display: $sr1display;'>
       <button class='inlineinput' type='button' onclick='searchClicked(1)'>$searchr1</button><input style='display: $sid1display;' id='searchid1' value='$searchid1' disabled>
     </div>
     <div id='searchresult2' style='display: $sr2display;'>
-      <button class='inlineinput' type='button' onclick='searchClicked(2)'>$searchr2</button><input style='display: $sr2display;' id='searchid2' value='$searchid2' disabled>
+      <button class='inlineinput' type='button' onclick='searchClicked(2)'>$searchr2</button><input id='searchid2' value='$searchid2' disabled>
     </div>
     <div id='searchresult3' style='display: $sr3display;'>
-      <button class='inlineinput' type='button' onclick='searchClicked(3)'>$searchr3</button><input style='display: $sr3display;' id='searchid3' value='$searchid3' disabled>
+      <button class='inlineinput' type='button' onclick='searchClicked(3)'>$searchr3</button><input id='searchid3' value='$searchid3' disabled>
     </div>
   </fieldset>
 </form>
 <form action='site.php' method='post'>
   <fieldset>
     <legend>Order</legend>
-    <input id='orderid' type='number' class='topinput' name='orderid' required>
-    <input type='number' name='amount' required>
-    <input type='number' class='bottominput' name='week' required>
+    <input id='orderid' type='number' class='topinput' name='orderid' placeholder='Item ID' required>
+    <input type='number' name='amount' placeholder='Amount' required>
+    <input type='number' class='bottominput' name='week' placeholder='Week' required>
+    <input type='submit' class='submit' name='formname' value='Order'>
   </fieldset>
+</form>
+<button type='button' onclick='latestOrders()'>Latest Orders</button>
+<iframe id='theiframe' style='display: none;'>IFrame failed :P</iframe>
+<form action='site.php' method='post'>
+<fieldset>
+  <legend>Account</legend>
+  <input type='submit' class='submit' name='formname' value='Create Referral Code'>
+  <input type='submit' class='submit' name='formname' value='Logout'>
+</fieldset>
 </form>
   ";
 

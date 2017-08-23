@@ -73,6 +73,15 @@ input
 #searchid1, #searchid2, #searchid3
 {
   display: inline;
+  width: 18%;
+}
+
+#searchresult1, #searchresult2, #searchresult3
+{
+  display: flex;
+  min-width: 100px;
+  max-width: 150px;
+  margin: 0 auto;
 }
 
 legend
