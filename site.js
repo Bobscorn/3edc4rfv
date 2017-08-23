@@ -27,9 +27,33 @@ function searchClicked(number)
   document.getElementById('orderid').value = id;
 }
 
-function lastestOrders()
+function latestOrders()
 {
-  alert("deez nuts");
-  document.getElementById('theiframe').src = 'orderslatest.php';
-  document.getElementById('theiframe').style.display = 'block';
+  if (document.getElementById('latest').innerHTML == 'Latest Orders') {
+    document.getElementById('latest').innerHTML = 'Hide';
+    document.getElementById('theiframe').src = 'orderslatest.php';
+    document.getElementById('theiframe').style.display = 'block';
+  }
+  else
+  {
+    document.getElementById('latest').innerHTML = 'Latest Orders';
+    document.getElementById('theiframe').src = '';
+    document.getElementById('theiframe').style.display = 'none';
+  }
+}
+
+function allOrders()
+{
+  if (document.getElementById('allorders').innerHTML == 'All Orders')
+  {
+    document.getElementById('allorders').innerHTML = 'Hide';
+    document.getElementById('theotheriframe').src = 'ordersall.php';
+    document.getElementById('theotheriframe').style.display = 'block';
+  }
+  else
+  {
+    document.getElementById('allorders').innerHTML = 'All Orders';
+    document.getElementById('theotheriframe').src = '';
+    document.getElementById('theotheriframe').style.display = 'none';
+  }
 }

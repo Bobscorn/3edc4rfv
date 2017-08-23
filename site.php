@@ -36,6 +36,7 @@ if (!isset($searchid3)) { $searchid3 = 0; }
 ?>
 </div>
 <div id='formholder'>
+  <div style='display: inline-block;'>
 <?php
 if (!$loggedin) {
 echo "
@@ -91,8 +92,10 @@ if ($loggedin)
     <input type='submit' class='submit' name='formname' value='Order'>
   </fieldset>
 </form>
-<button type='button' onclick='latestOrders()'>Latest Orders</button>
+<button type='button' id='latest' class='latest' onclick='latestOrders()'>Latest Orders</button>
 <iframe id='theiframe' style='display: none;'>IFrame failed :P</iframe>
+<button type='button' id='allorders' class='latest' onclick='allOrders()'>All Orders</button>
+<iframe id='theotheriframe' style='display: none;'>IFrame2 failed :P</iframe>
 <form action='site.php' method='post'>
 <fieldset>
   <legend>Account</legend>
@@ -104,6 +107,7 @@ if ($loggedin)
 
 }
 ?>
+</div>
 </div> <!-- of id='formholder' -->
 <script><?php require 'site.js'; ?></script>
 <link rel='stylesheet' type='text/css' href='bob.css'>

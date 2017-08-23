@@ -360,12 +360,14 @@ function GenerateRandomHex($bytes)
 function dump_var($var)
 {
   // Debug checkpoint, this way if I want to disable debug output I just comment the next line
+  // Uncomment next line to get debug output
   //var_dump($var);
 }
 
 function dEcho($var)
 {
   // Debug checkpoint, all echoed debug output goes through here, so easier to disable
+  // Uncomment next line to get debug output
   //echo "<h4>$var</h4>";
 }
 

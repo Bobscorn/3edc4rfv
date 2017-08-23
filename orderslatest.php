@@ -2,7 +2,7 @@
 require 'tools.php';
 
 $connection = DB::GetDefaultInstance();
-$user = new User();
+$user = new User($connection);
 
 if ($user->CheckIfLoggedIn())
 {
