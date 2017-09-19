@@ -71,7 +71,7 @@ class DB
 
 
 // USER CLASS TO STORE SESSION DATA
-// NOT WORKING
+// NOT WORKING - ACTUALLY FULLY WORKING
 class User {
   private $username;
   private $connection;

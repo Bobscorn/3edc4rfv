@@ -1,0 +1,516 @@
+body,html {
+  background-color: #777;
+  margin: 0;
+  padding: 0;
+}
+
+*:focus
+{
+  box-shadow: 0 0 1pt 1pt blue;
+  outline: none;
+}
+
+#phpoutput
+{
+  text-align: center;
+  color: #ddd;
+  background-color: #777;
+  display: block;
+}
+
+.searchbar
+{
+  color: #000 !important;
+  text-align: left !important;
+  margin: 1px auto !important;
+  height: 25px;
+  min-height: 25px;
+  border-radius: 10px 0 0 10px;
+  border-width: 1px;
+  border-color: #333;
+  width: 300px;
+  padding: 0 0 0 10px !important;
+  transition: margin 0.2s linear,
+              height 0.2s linear;
+}
+.searchbar:focus
+{
+  box-shadow: 0 0 1pt 1pt blue;
+  outline: none;
+}
+#userstuff:hover .searchbar, #usermenus:hover .searchbar,
+#otherusemenus:hover .searchbar, #otherusermenus .searchbar:hover,
+#usermenus .searchbar:hover
+{
+  margin: 5px auto 0px auto !important;
+}
+.searchbutton
+{
+  vertical-align: middle;
+  height: 27px;
+  min-height: 25px;
+  border-radius: 0 10px 10px 0 !important;
+  border-width: 0;
+  padding: 4px 6px;
+  margin: -1px auto 0 auto !important;
+  color: #fff !important;
+}
+#userstuff:hover, #userstuff #usermenus:hover
+{
+  height: 40px;
+}
+
+.searchbutton:focus
+{
+  box-shadow: 0 0 1pt 1pt blue;
+  outline: none;
+}
+
+#userstuff
+{
+  width: 100%;
+  /*position: fixed;*/
+  height: 30px;
+  display: block;
+  background-color: #aaa;
+  transition: height 0.2s linear;
+}
+
+#userstufflogin
+{
+  width: 100%;
+  /*position: fixed;*/
+  height: 70px;
+  display: block;
+  background-color: #aaa;
+}
+
+
+#userstuff > *
+{
+  border: none;
+  padding: 0;
+  margin: 0;
+  height: 50px;
+  display: inline;
+  color: #ddd;
+}
+
+#userstuff *
+{
+  text-align: center;
+}
+
+#userstuff form
+{
+  border: none;
+  padding: 0;
+  height: 50px;
+  display: block;
+}
+
+#otherusermenus
+{
+  border: none;
+  padding: 0 auto;
+  margin: 0;
+  height: 25px;
+  width: 15%;
+  display: inline-block;
+}
+
+#usermenus
+{
+  border: none;
+  padding: 0;
+  margin: 0;
+  width: 79.5%;
+  height: 25px;
+  display: inline-block;
+}
+
+#usermenus *
+{
+  display: block;
+  margin: 0 auto;
+}
+
+#usermenuslogin
+{
+  border: none;
+  padding: 0;
+  margin: 18px 0;
+  width: 77.5%;
+  float: left;
+  height: 65px;
+  display: inline-block;
+}
+
+#usermenuslogin .searchbar
+{
+  margin: 5px 0 auto 0;
+}
+
+#userstufflogin > *
+{
+  border: none;
+  padding: 0;
+  margin: 0;
+  height: 50px;
+  display: inline;
+}
+
+#userstufflogin *
+{
+  text-align: center;
+}
+
+#userstufflogin form
+{
+  border: none;
+  padding: 0;
+  height: 50px;
+  display: block;
+}
+
+#logindiv, #registerdiv
+{
+  float: right;
+  display: inline;
+  margin: 5px auto;
+  width: 17.5%;
+  max-width: 155px;
+}
+
+#logout
+{
+  width: 19.5%;
+}
+
+#username, #password, #registername, #registerpassword
+{
+  vertical-align: top;
+  float: right;
+  width: 80%;
+  max-width: 150px;
+}
+
+#formholder
+{
+  text-align: center;
+  width: 35%;
+  margin: 0 auto;
+  display: block;
+}
+
+#swapFormButton
+{
+  border-color: #333;
+  border-radius: 10px 10px 10px 10px;
+  background-color: #222;
+  color: #fff;
+  font-size: 8.5pt;
+  font-weight: bolder;
+  display: block;
+  margin: 0 auto;
+  transform: rotateZ(90deg);
+  transform-origin: 13% 50%;
+}
+
+#togglePHPButton
+{
+  width: 100%;
+  display: block;
+  margin: 0;
+  padding: 0;
+  height: 5px;
+  border: none;
+}
+
+#togglePHPButton:focus
+{
+  box-shadow: 0 0 0.3pt 0.3pt blue;
+}
+
+.latest
+{
+  border-color: #333;
+  background-color: #222;
+  color: #fff;
+  font-weight: bolder;
+  display: flex;
+  margin: 0 auto;
+}
+
+input
+{
+  display: block;
+  border-style: solid;
+  border-color: #999;
+}
+
+.topinput
+{
+  /*border-left-color: #445;
+  border-top-color: #445;
+  border-right-color: #cbb;
+  border-bottom-color: #999;*/
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+.bottominput
+{
+  /*border-left-color: #cbb;
+  border-top-color: #999;
+  border-right-color: #445;
+  border-bottom-color: #445;*/
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+.midinput
+{
+  border-left-color: #cbb;
+  border-top-color: #445;
+  border-right-color: #cbb;
+  border-bottom-color: #445;
+}
+
+.fullinput
+{
+  border-left-color: #445;
+  border-top-color: #445;
+  border-right-color: #445;
+  border-bottom-color: #445;
+}
+
+.submit
+{
+  border-color: #333;
+  background-color: #222;
+  color: #fff;
+  font-weight: bolder;
+  margin: 0 auto;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+.submit:hover
+{
+  cursor: pointer;
+}
+
+.productdiv
+{
+  max-width: 869px;
+  width: auto;
+  max-height: 165px;
+  height: 130px;
+  margin: 10px auto;
+  padding: 15px 10px;
+  background-color: #ccc;
+  display: block;
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+.productdiv > div
+{
+  width: 600em;
+  height: 0;
+  display: block;
+}
+
+.pdiv
+{
+  display: inline-block;
+  width: 150px;
+  min-width: 150px;
+  height: 100px;
+  min-height: 100px;
+  float: left;
+  padding: 5px;
+  margin: auto 5px;
+  border: none;
+  background-color: inherit;
+}
+
+.ptitle
+{
+  padding: 0;
+  margin: 0;
+  display: inline-block;
+  width: 79.5%;
+  height: 20%;
+  float: left;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.ptitle::-webkit-scrollbar, .pdate::-webkit-scrollbar,
+.pdesc::-webkit-scrollbar, .pid::-webkit-scrollbar, .ptags::-webkit-scrollbar
+{
+  display: none;
+}
+
+.pdate
+{
+  padding: 0;
+  margin: 0;
+  display: inline-block;
+  width: 19.5%;
+  height: 20%;
+  float: right;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.pdesc
+{
+  font-size: 0.7em;
+  padding: 0;
+  margin: 0;
+  display: inline-block;
+  width: 100%;
+  height: 60%;
+  overflow-x: auto;
+  overflow: hidden;
+}
+
+.pid
+{
+  padding: 0 1px 0 3px;
+  margin: 0;
+  display: inline-block;
+  width: 16%;
+  height: 20%;
+  border-width: 0 thin;
+  border-color: #111;
+  border-style: solid;
+  overflow: hidden;
+}
+
+.ptags
+{
+  font-size: 0.59em;
+  padding: 0 2px 0 0;
+  margin: 0;
+  display: inline-block;
+  width: auto;
+  max-width: 33%;
+  height: 20%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  float: left;
+}
+
+.pauthor
+{
+  padding: 0;
+  margin: 0;
+  display: inline-block;
+  width: auto;
+  max-width: 37%;
+  height: 20%;
+  overflow: hidden;
+  float: right;
+}
+
+.inlineinput
+{
+  display: inline;
+}
+
+.menu-parent
+{
+  position: relative;
+}
+
+.menu {
+  visibility: hidden; /* hides sub-menu */
+  display: block;
+  opacity: 0;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background-color: #666;
+
+  transform: translateY(-2em);
+  z-index: -1;
+  transition: all 0.3s ease-in-out 0s, visibility 0s linear 0.3s, z-index 0s linear 0.01s;
+}
+
+.menu-parent:hover .menu {
+  visibility: visible;
+  opacity: 1;
+  z-index: 1;
+  transform: translateY(0%);
+  transition-delay: 0s, 0s, 0.3s;
+}
+
+.menu > li
+{
+  display: inline-block;
+  width: auto;
+  height: 20px;
+  border-color: #111;
+  border-width: medium 0 medium 0;
+}
+
+#userstuff ul,
+#userstuff ul li
+{
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+#userstuff > ul > li
+{
+  display: inline-block;
+}
+
+li > input
+{
+  background-color: inherit;
+  display: inline-block;
+}
+
+table
+{
+  color: #ccc;
+}
+
+legend
+{
+  font-weight: bolder;
+  color: #fff;
+  text-align: center;
+}
+
+h1, h2, h3, h4, h5, h6
+{
+  margin: auto;
+  padding: 0;
+  border: none;
+}
+
+form
+{
+  display: block;
+  width: auto;
+  margin: 0 auto;
+  border: none;
+}
+
+fieldset
+{
+  display: inline-block;
+  margin: 0 auto;
+  background-color: #777;
+  border-style: solid;
+  border-width: medium;
+  border-spacing: 0;
+  border-color: #333;
+}

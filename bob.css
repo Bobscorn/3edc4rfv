@@ -46,19 +46,27 @@ input
 {
   border-left-color: #445;
   border-top-color: #445;
-  border-right-color: #999;
+  border-right-color: #cbb;
   border-bottom-color: #999;
 }
 
 .bottominput
 {
-  border-left-color: #999;
+  border-left-color: #cbb;
   border-top-color: #999;
   border-right-color: #445;
   border-bottom-color: #445;
 }
 
-.fullinput
+.midinput
+{
+  border-left-color: #cbb;
+  border-top-color: #445;
+  border-right-color: #cbb;
+  border-bottom-color: #445;
+}
+
+.fulinput
 {
   border-left-color: #445;
   border-top-color: #445;
@@ -92,6 +100,11 @@ input
   min-width: 100px;
   max-width: 150px;
   margin: 0 auto;
+}
+
+table
+{
+  color: #ccc;
 }
 
 legend

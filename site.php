@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+<link rel='stylesheet' type='text/css' href='bob.css'>
 <div id='phpoutput'>
 <?php
 require 'sign-in.php';
@@ -5,7 +7,6 @@ require_once 'tools.php';
 $connection = DB::GetDefaultInstance();
 
  ?>
-<!DOCTYPE html>
 <?php
 if (!isset($loginvisible)) { $loginvisible = 'inline-block'; }
 if (!isset($registervisible)) { $registervisible = 'none'; }
@@ -53,7 +54,7 @@ echo "
   <fieldset>
     <legend>Register</legend>
     <input type='text' class='topinput' maxlength='64' name='name' placeholder='Username' required>
-    <input type='password' maxlength='64' name='password' placeholder='Password' required>
+    <input type='password' class='midinput' maxlength='64' name='password' placeholder='Password' required>
     <input type='text' class='bottominput' maxlength='32' minlength='32' name='rcode' placeholder='Referral Code' required>
     <input type='submit' class='submit' name='formname' value='Register'>
   </fieldset>
@@ -69,7 +70,7 @@ if ($loggedin)
 <form action='site.php' method='post'>
   <fieldset>
     <legend>Search</legend>
-    <input type='text' class='fullinput' name='search' placeholder='Search' value='$searchthing' required>
+    <input type='text' class='fullinput' name='search' pattern='[A-Za-z0-9 ]+' title='Please Only Alphanumeric' placeholder='Search' value='$searchthing' required>
     <input type='submit' class='submit inlineinput' name='formname' value='Search'>
     <input type='submit' class='submit inlineinput' name='formname' value='Add Item'>
     <div id='searchresult1' style='display: $sr1display;'>
@@ -87,7 +88,7 @@ if ($loggedin)
   <fieldset>
     <legend>Order</legend>
     <input id='orderid' type='number' class='topinput' name='orderid' placeholder='Item ID' required>
-    <input type='number' name='amount' placeholder='Amount' required>
+    <input type='number' class='midinput' name='amount' placeholder='Amount' required>
     <input type='number' class='bottominput' name='week' placeholder='Week' required>
     <input type='submit' class='submit' name='formname' value='Order'>
   </fieldset>
@@ -110,4 +111,3 @@ if ($loggedin)
 </div>
 </div> <!-- of id='formholder' -->
 <script><?php require 'site.js'; ?></script>
-<link rel='stylesheet' type='text/css' href='bob.css'>
