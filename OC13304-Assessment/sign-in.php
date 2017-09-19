@@ -68,6 +68,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
 
         $makeproductquery = "INSERT INTO `products` (`name`,`description`,`date`,`author`) VALUES ('$pname','$pdesc','$pdate','$pauthor');";
         $madeproduct = $connection->query($makeproductquery);
+        dump_var($madeproduct);
+        # Get id
+        $getidquery = "SELECT `id` FROM `products` ORDER BY `id` DESC LIMIT 1;";
+        $productidthing = $connection->query($getidquery);
+        $id = $productidthing->fetch_assoc()['id'];
+        $addtagsquery = "INSERT INTO `tags` (`productid`, `tags`) VALUES ('$id','$ptags');";
+        $connection->query($addtagsquery);
 
         if (Exists($madeproduct))
         {
@@ -76,10 +83,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
         else
         {
           nEcho("Product Creation Failed");
-          var_dump($_POST);
-          var_dump($madeproduct);
-          var_dump($makeproductquery);
-          var_dump($user);
           $page = 'create-product.php';
         }
       }

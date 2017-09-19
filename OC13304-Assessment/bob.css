@@ -484,7 +484,7 @@ li > input
   padding: 20px;
   text-align: center;
 }
-#create-product > input
+#create-product > input, #create-product > textarea
 {
   width: 90%;
   min-width: 100px;

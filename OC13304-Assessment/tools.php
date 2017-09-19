@@ -460,6 +460,7 @@ function MakeSecureSymbols($var)
 {
   // Replaces all characters except A-Z a-z 0-9 (space) and symbols !"#$%&'()*+,-. with nothing (remove all non Alphanumeric and non symbols)
   $var = preg_replace("/[^A-Za-z0-9 !-.]/i", "", $var);
+  return $var;
 }
 
 function DontExist($var)
@@ -502,6 +503,7 @@ function dump_var($var)
   {
     callStack();
     var_dump($var);
+    echo "\n";
   }
 }
 
@@ -515,6 +517,7 @@ function callStack()
   // Debug checkpoint, Uncomment next line to enable debug output
   if (DebugOutputEnabled()) {
     debug_print_backtrace();
+    echo "\n";
   }
 }
 
@@ -526,7 +529,7 @@ function dump_vars()
   {
     // No need for debug check as dEcho and dump_var does that
     dump_var($i);
-    dEcho("\n");
+    echo "\n";
   }
 }
 
@@ -535,14 +538,14 @@ function dEcho($var)
   // Debug checkpoint, all echoed debug output goes through here, so easier to disable
   // Uncomment next line to get debug output
   if (DebugOutputEnabled()) {
-    echo "<h4>$var</h4>";
+    echo "<h4>$var\n</h4>";
   }
 }
 
 function nEcho($var)
 {
   // Provides a way of formatting output before it gets echoed
-  echo "<h4>$var</h4>";
+  echo "<h4>$var\n</h4>";
 }
 
 function TableResults($formatstring, $mysqliobject)
