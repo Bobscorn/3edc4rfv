@@ -53,20 +53,40 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
 
     case 'Create Product':
 
-      if (isset($_POST['product-name']))
+      Debug::Output("create-product", true);
+      if (isset($_POST['product-name']) && $user->CheckIfLoggedIn())
       {
-        # Post variables
+        # Product-name is set, this means a form with product values called this page
+        # Post variables, Post because product creation should not be refreshable
         $pname = $_POST['product-name'];
-        $pdesc = isset($_POST['product-desc']) ? $_POST['product-desc'] : 'No description';
-        $ptags = isset($_POST['product-tags']) ? $_POST['product-tags'] : 'Tagless';
+        $pdesc = isset($_POST['product-desc']) ? MakeSecureSymbols($_POST['product-desc']) : 'No description';
+        $ptags = isset($_POST['product-tags']) ? MakeSecure($_POST['product-tags']) : 'Tagless';
         # Self Obtained Variables
-        $pdate = new DateTime(NULL, timezone_open("Pacific/Auckland"));
-        $pauthor = $user->GetName();
+        $pdateobj = new DateTime(NULL, timezone_open("Pacific/Auckland"));
+        $pdate = $pdateobj->format("Y/m/d H:i:s");
+        $pauthor = $user->GetID();
+
+        $makeproductquery = "INSERT INTO `products` (`name`,`description`,`date`,`author`) VALUES ('$pname','$pdesc','$pdate','$pauthor');";
+        $madeproduct = $connection->query($makeproductquery);
+
+        if (Exists($madeproduct))
+        {
+          unset($page); # unset $page to get default behaviour;
+        }
+        else
+        {
+          nEcho("Product Creation Failed");
+          var_dump($_POST);
+          var_dump($madeproduct);
+          var_dump($makeproductquery);
+          var_dump($user);
+          $page = 'create-product.php';
+        }
       }
       else
       {
-        $header = 'usertools.php';
-        $page = 'product.php';
+        # Product-name not set, this means someone wants to create a product (isn't on product creation page)
+        $page = 'create-product.php';
       }
 
       // Check if item exists already

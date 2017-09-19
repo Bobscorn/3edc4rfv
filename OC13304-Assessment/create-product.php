@@ -4,9 +4,9 @@
 # Addition to database done by sign-in.php around line 54
  ?>
 
-<form method="post" action="index.php">
-  <input type="text" name="product-name" required></input>
-  <input type="text" name="product-description"></input>
-  <input type="text" name="product-tags" required></input>
+<form id="create-product" method="post" action="index.php">
+  <input type="text" placeholder="Product Name" name="product-name" maxlength="254" pattern="[A-Za-z0-9 ]+" title="Alphanumeric Names Only" required></input>
+  <input type="text" placeholder="Product Description" name="product-desc" maxlength="2147483647" style="height:50px;"></input>
+  <input type="text" placeholder="Product Tags (separate with commas)" name="product-tags" required></input>
   <input type="submit" class="submit" name="formname" value="Create Product"></input>
 </form>

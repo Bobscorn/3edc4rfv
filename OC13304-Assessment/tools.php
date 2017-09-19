@@ -392,6 +392,17 @@ class User {
   {
     return $this->username;
   }
+
+  public function GetID()
+  {
+    if (isset($this->username))
+    {
+      $getidquery = "SELECT `id` FROM `accounts` WHERE `name` = '$this->username'";
+      $result = $this->connection->query($getidquery);
+
+      return $result->fetch_assoc()['id'];
+    }
+  }
 }
 
 
