@@ -53,8 +53,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
 
     case 'Create Product':
 
-      $header = 'usertools.php';
-      $page = 'product.php';
+      if (isset($_POST['product-name']))
+      {
+        # Post variables
+        $pname = $_POST['product-name'];
+        $pdesc = isset($_POST['product-desc']) ? $_POST['product-desc'] : 'No description';
+        $ptags = isset($_POST['product-tags']) ? $_POST['product-tags'] : 'Tagless';
+        # Self Obtained Variables
+        $pdate = new DateTime(NULL, timezone_open("Pacific/Auckland"));
+        $pauthor = $user->GetName();
+      }
+      else
+      {
+        $header = 'usertools.php';
+        $page = 'product.php';
+      }
 
       // Check if item exists already
       /*$checkforitemquery = "SELECT `id` FROM `items` WHERE `itemname` = '$itemname'";
