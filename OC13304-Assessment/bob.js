@@ -1,15 +1,16 @@
+// This function swaps between login and register form
 function swapForms()
 {
   var loginvisible = document.getElementById('logindiv').style.display == 'inline';
   var registervisible = document.getElementById('registerdiv').style.display == 'inline';
-  if (registervisible)
+  if (registervisible) // Switch to login form, change switch button to say 'Register?'
   {
     document.getElementById('logindiv').style.display = 'inline';
     document.getElementById('registerdiv').style.display = 'none';
     document.getElementById('swapFormButton').innerHTML = 'Register?';
     return;
   }
-  if (loginvisible)
+  if (loginvisible) // Switch to register form, change switch button to say 'Login?'
   {
     document.getElementById('logindiv').style.display = 'none';
     document.getElementById('registerdiv').style.display = 'inline';
@@ -21,6 +22,7 @@ function swapForms()
   document.getElementById('swapFormButton').innerHTML = 'Register?';
 }
 
+// This function toggles visibility of the php output at the top of the page
 function togglePHPOutput()
 {
   var OutputVisible = document.getElementById('phpoutput').style.display != 'none';
@@ -31,14 +33,14 @@ function togglePHPOutput()
   else
   {
     document.getElementById('phpoutput').style.display = 'block';
-    if (document.getElementById('phpoutput').children.length == 0)
+    if (document.getElementById('phpoutput').children.length == 0) // If phpoutput is empty
     {
-      document.getElementById('phpoutput').innerHTML = '<h4>No output</h4>';
+      document.getElementById('phpoutput').innerHTML = '<h4>Nothing to see here</h4>';
     }
   }
 }
 
-
+// Automatically hide phpoutput after 4 seconds (4000ms)
 setTimeout(function() {
   document.getElementById('phpoutput').style.display = 'none';
 }, 4000);

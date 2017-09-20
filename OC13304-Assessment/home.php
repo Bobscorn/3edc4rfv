@@ -2,69 +2,26 @@
 require_once "tools.php";
 Debug::Output("home", false);
 ?>
+<h3 style='text-align:center;'>Here's some random products</h3>
 <div class="productdiv">
 <div>
 <?php
-# Get 5 random products
-# First get highest id of products
-$gethighestidquery = "SELECT `id` FROM `products` ORDER BY `id` DESC LIMIT 1;";
 $conn = DB::GetDefaultInstance();
-$highestidsql = $conn->query($gethighestidquery);
-if (Exists($highestidsql))
-{
-  $highestid = $highestidsql->fetch_assoc()['id'];
-}
-else
-{
-  die("yomama");
-}
-if ($highestid > 1)
-{
-  $i = 0;
-  $j = 0;
-  $nums = array();
-  while ($i < 5 && $j < 5)
-  {
-    $randnum = GetRand(0, $highestid, $nums);
-    $trygetrandomproductquery = "SELECT * FROM `products` INNER JOIN `tags` ON `products`.`id` = `tags`.`productid` WHERE `products`.`id` = $randnum;";
-    dump_var($trygetrandomproductquery);
-    $randomproduct = $conn->query($trygetrandomproductquery);
-    if (Exists($randomproduct))
-    {
-      $i++;
-      $nums["$randnum"] = $randnum;
-      # Print product
-      $row = $randomproduct->fetch_assoc();
-      $thing = '';
-      $thing = new Product($row['name'], $row['description'], $row['date'], $row['author'], $row['tags'], $row['id']);
-      Products::Add($thing, "thing$i");
-      include "product.php";
-    }
-    else
-    {
-      $j++;
-      # Max of 5 failures (stored in $j)
-    }
-  }
-  dump_var($nums);
-}
-else
-{
-  echo "<h4> No Products :/</h4>";
-}
+# Get 5 random products
 
-function GetRand($bottom, $top, $nums)
+$randomproductsquery = "SELECT DISTINCT products.id, products.description, products.name AS name, products.date, tags.tags AS tags, accounts.name AS author FROM ((`products` INNER JOIN `tags` ON `products`.`id` = `tags`.`productid`) INNER JOIN `accounts` ON `products`.`author` = `accounts`.`id`) ORDER BY RAND() LIMIT 5;";
+$randomproducts = $conn->query($randomproductsquery);
+dump_var($randomproductsquery);
+dump_var($conn);
+
+for ($i = 0; $i < $randomproducts->num_rows; $i++)
 {
-  $thing = mt_rand($bottom, $top);
-  foreach ($nums as $i)
-  {
-    if ($thing == $i)
-    {
-      return GetRand($bottom, $top, $nums);
-      break;
-    }
-  }
-  return $thing;
+  $row = $randomproducts->fetch_assoc();
+  $thing = '';
+  $thing = new Product($row['name'], $row['description'], $row['date'], $row['author'], $row['tags'], $row['id']);
+  Products::Add($thing, "thing$i");
+  dump_var($row);
+  include "product.php";
 }
 
 ?>

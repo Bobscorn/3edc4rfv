@@ -5,14 +5,12 @@
 require 'sign-in.php';
 require_once 'tools.php';
 $connection = DB::GetDefaultInstance();
+Debug::Output("index", false);
 
- ?>
-<?php
 if (!isset($loginvisible)) { $loginvisible = 'inline'; }
 if (!isset($registervisible)) { $registervisible = 'none'; }
 if (!isset($toolsvisible)) { $toolsvisible = 'none'; }
 
-$connection = DB::GetDefaultInstance();
 $user = new User($connection);
 
 $buttoncontent = $loginvisible == 'inline' ? 'Register?' : 'Login?';
@@ -38,7 +36,7 @@ if (!isset($searchthing)) { $searchthing = ''; }
 <?php
 if (!$loggedin) {
   $header = 'login.php';
-  $page = 'home.php';
+  $page = isset($page) ? $page : 'home.php';
 }
 
 if ($loggedin)

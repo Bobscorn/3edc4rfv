@@ -501,7 +501,7 @@ function dump_var($var)
   // Uncomment next line to get debug output
   if (DebugOutputEnabled())
   {
-    callStack();
+    #callStack();
     var_dump($var);
     echo "\n";
   }
@@ -616,6 +616,26 @@ function MakeTitleRow()
 
 function isBinary($str) {
     return preg_match('~[^\x20-\x7E\t\r\n]~', $str) > 0;
+}
+
+# Algorithm showed on https://stackoverflow.com/questions/2394246/algorithm-to-select-a-single-random-combination-of-values/2394292#2394292
+function UniqueRandomArray($amount, $cap)
+{
+  $thing = array();
+  $p = 0;
+  for ($j = $cap - $amount; $j < $cap; $j++)
+  {
+    $t = mt_rand(1, $j);
+    if (in_array($t, $thing))
+    {
+      $thing["$p"] = $j;
+    }
+    else
+    {
+      $thing["$p"] = $t;
+    }
+    $p++;
+  }
 }
 
  ?>

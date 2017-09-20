@@ -6,8 +6,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
   if (DontExist($_POST['formname'])) {$_POST['formname'] = 'none';}
   $connection = DB::GetDefaultInstance();
   $user = new User($connection);
+
+  # The formname variable is submitted by 'submit' buttons in forms, (or buttons like logout)
+  # This tells PHP which action it should take
   switch ($_POST['formname'])
   {
+    case 'none':
+      break;
     case 'Login':
       // LOGGING IN
       $name = MakeSecure($_POST['name']);
@@ -42,37 +47,36 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
 
     case 'Search':
 
-      $_DEBUGOUTPUT['search'] = true;
-      $currentdebug = 'search';
-      $searchthing = strtolower(MakeSecure($_POST['search']));
-      $searchquery = "SELECT * FROM `items` WHERE `itemname` LIKE '%$searchthing%'";
-
-      $searchthing = MakeSecure($_POST['search']); // Used to keep the search parameter in the search bar
+      $page = 'search.php';
 
       break;
 
     case 'Create Product':
 
-      Debug::Output("create-product", true);
+      Debug::Output("create-product", false);
       if (isset($_POST['product-name']) && $user->CheckIfLoggedIn())
       {
         # Product-name is set, this means a form with product values called this page
-        # Post variables, Post because product creation should not be refreshable
+        # Post variables, Post because product creation should not be 'bookmarked'
         $pname = $_POST['product-name'];
         $pdesc = isset($_POST['product-desc']) ? MakeSecureSymbols($_POST['product-desc']) : 'No description';
         $ptags = isset($_POST['product-tags']) ? MakeSecure($_POST['product-tags']) : 'Tagless';
-        # Self Obtained Variables
+
+        # Non-Post Variables
         $pdateobj = new DateTime(NULL, timezone_open("Pacific/Auckland"));
         $pdate = $pdateobj->format("Y/m/d H:i:s");
-        $pauthor = $user->GetID();
+        $pauthorid = $user->GetID();
 
-        $makeproductquery = "INSERT INTO `products` (`name`,`description`,`date`,`author`) VALUES ('$pname','$pdesc','$pdate','$pauthor');";
+        $makeproductquery = "INSERT INTO `products` (`name`,`description`,`date`,`author`) VALUES ('$pname','$pdesc','$pdate','$pauthorid');";
         $madeproduct = $connection->query($makeproductquery);
         dump_var($madeproduct);
-        # Get id
+
+        # Get highest id in database, this should naturally be the product just added
         $getidquery = "SELECT `id` FROM `products` ORDER BY `id` DESC LIMIT 1;";
         $productidthing = $connection->query($getidquery);
         $id = $productidthing->fetch_assoc()['id'];
+
+        # Add tags into database, as tags are in a separate table this requires a separate query
         $addtagsquery = "INSERT INTO `tags` (`productid`, `tags`) VALUES ('$id','$ptags');";
         $connection->query($addtagsquery);
 
@@ -88,75 +92,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
       }
       else
       {
-        # Product-name not set, this means someone wants to create a product (isn't on product creation page)
+        # Product-name not set, this means user should be directed to create product page
+        # Because same 'formname' value is used for directing to product Creation
+        # and submitting new product information
         $page = 'create-product.php';
       }
-
-      // Check if item exists already
-      /*$checkforitemquery = "SELECT `id` FROM `items` WHERE `itemname` = '$itemname'";
-      $itemidsql = $connection->query($checkforitemquery);
-
-      if (Exists($itemidsql))
-      {
-        // Show the user it exists
-        $sr1display = 'block';
-        $searchr3 = $itemname;
-        $searchid1 = $itemidsql->fetch_assoc()['id'];
-        nEcho("Item already exists");
-        break;
-      }
-
-      $additemquery = "INSERT INTO `items` (`itemname`) VALUES ('$itemname')";
-      $success = $connection->query($additemquery);
-
-      if ($success)
-      {
-        nEcho("Successfully added item '$itemname' into database");
-      }
-      */
       break;
 
-    case 'Order':
-
-      $itemid   = MakeSecure($_POST['orderid']);
-      $amount   = MakeSecure($_POST['amount']);
-      $week     = MakeSecure($_POST['week']);
-
-      if (DontExist($itemid) || DontExist($amount) || DontExist($week))
-      {
-        nEcho("One Order parameter was invalid or empty");
-        break;
-      }
-
-      $user->CheckIfLoggedIn();
-      $username = $user->GetName();
-
-      if ($username == '')
-      {
-        nEcho("You were logged out so nothing was ordered");
-      }
-
-      $orderquery = "INSERT INTO `orders` (`itemid`,`amount`,`week`,`orderer`) VALUES ('$itemid','$amount','$week','$username')";
-      $success = $connection->query($orderquery);
-
-
-      if ($success)
-      {
-        // Get item query will work if previous INSERT worked because the `itemid` column is a foreign key
-        // Referencing the items table, so if it succeeded this will work
-        $getitemnamequery = "SELECT `itemname` FROM `items` WHERE `id` = '$itemid'";
-        $namesql = $connection->query($getitemnamequery);
-        $itemname = $namesql->fetch_assoc()['itemname'];
-        nEcho("$username you ordered $amount x '$itemname' ($itemid) for week $week");
-      }
-
-      break;
-
-    case 'none':
-      break;
     default:
-    $formname = $_POST['formname'];
-      echo "<h4> A form was submitted with value '$formname,' this value was not recognised </h4><h6> You can safely ignore this if you're not a moderator";
+      $formname = $_POST['formname'];
+      echo "<h4> A form was submitted with value '$formname,' this value was not recognised </h4><h6> You can safely ignore this if you're not a moderator</h6>";
       break;
   }
 }
