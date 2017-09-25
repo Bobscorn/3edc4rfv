@@ -21,8 +21,8 @@ dump_var($conn);
 $searchquery = "SELECT DISTINCT
     id,
     description,
-    NAME,
-    DATE,
+    name,
+    date,
     tags,
     author
 FROM
@@ -35,7 +35,7 @@ FROM
             products.date,
             tags.tags AS tags,
             accounts.name AS author,
-            MATCH(`products`.`name`) AGAINST('$search') +3 AS score
+            MATCH(`products`.`name`) AGAINST('$search*') +3 AS score
         FROM
             (
                 (
@@ -45,7 +45,7 @@ FROM
             INNER JOIN `accounts` ON `products`.`author` = `accounts`.`id`
             )
         WHERE
-            MATCH(`products`.`name`) AGAINST('$search' IN BOOLEAN MODE)
+            MATCH(`products`.`name`) AGAINST('$search*' IN BOOLEAN MODE)
         UNION
     SELECT
         products.id,
@@ -54,7 +54,7 @@ FROM
         products.date,
         tags.tags AS tags,
         accounts.name AS author,
-        MATCH(`tags`.`tags`) AGAINST('$search') +2 AS score
+        MATCH(`tags`.`tags`) AGAINST('$search*') +2 AS score
     FROM
         (
             (
@@ -64,7 +64,7 @@ FROM
         INNER JOIN `accounts` ON `products`.`author` = `accounts`.`id`
         )
     WHERE
-        MATCH(`tags`.`tags`) AGAINST('$search' IN BOOLEAN MODE)
+        MATCH(`tags`.`tags`) AGAINST('$search*' IN BOOLEAN MODE)
     UNION
 SELECT
     products.id,
@@ -73,7 +73,7 @@ SELECT
     products.date,
     tags.tags AS tags,
     accounts.name AS author,
-    MATCH(`accounts`.`name`) AGAINST('$search') +1 AS score
+    MATCH(`accounts`.`name`) AGAINST('$search*') +1 AS score
 FROM
     (
         (
@@ -83,7 +83,7 @@ FROM
     INNER JOIN `accounts` ON `products`.`author` = `accounts`.`id`
     )
 WHERE
-    MATCH(`accounts`.`name`) AGAINST('$search' IN BOOLEAN MODE)
+    MATCH(`accounts`.`name`) AGAINST('$search*' IN BOOLEAN MODE)
 UNION
 SELECT
     products.id,
@@ -92,7 +92,7 @@ SELECT
     products.date,
     tags.tags AS tags,
     accounts.name AS author,
-    MATCH(`products`.`description`) AGAINST('$search') AS score
+    MATCH(`products`.`description`) AGAINST('$search*') AS score
 FROM
     (
         (
@@ -102,7 +102,7 @@ FROM
     INNER JOIN `accounts` ON `products`.`author` = `accounts`.`id`
     )
 WHERE
-    MATCH(`products`.`description`) AGAINST('$search' IN BOOLEAN MODE)
+    MATCH(`products`.`description`) AGAINST('$search*' IN BOOLEAN MODE)
 ORDER BY
     score
 DESC
@@ -127,7 +127,7 @@ $rs[2] = $results->fetch_assoc();
 $rs[3] = $results->fetch_assoc();
 $rs[4] = $results->fetch_assoc();
 $i = 0; # $i is used for naming the products
-{
+{ # Just chucking the first iteration of result printing into a scope
   echo "<div class='productdiv'>
           <div>";
   $thingmahdoohicky = '';
@@ -139,7 +139,9 @@ $i = 0; # $i is used for naming the products
     if (!is_null($r))
     {
       $thingmahdoohicky = 'wadup'; # To check for No Results
-      $thingy = new Product($r['name'], $r['description'], $r['date'], $r['author'], $r['tags'], $r['id']);
+      $dateobj = new DateTime($r['date'], timezone_open("Pacific/Auckland"));
+      $datestr = $dateobj->format("d/m");
+      $thingy = new Product($r['name'], $r['description'], $datestr, $r['author'], $r['tags'], $r['id']);
       Products::Add($thingy, "thing$i");
       include "product.php";
       dump_var($r);
@@ -151,7 +153,7 @@ $i = 0; # $i is used for naming the products
   }
   if ($thingmahdoohicky != 'wadup') # Checks if any results were printed
   {
-    nEcho("No Results :/<br><br>");
+    nEcho("No Results for '$search' :/<br><br>");
     echo "<h5>But here's a really long div you can scroll across :)</h5>";
   }
   echo "   </div>
@@ -167,9 +169,9 @@ $i = 0; # $i is used for naming the products
 }
 
 # Go through remaining search results printing out 5 into a product div (if any are null,
-# no results after that null result are printed, the product div will be half full)
+# no results after that null result are printed, the product div will just be incomplete)
 # A while loop because initialisation is done before, meaning a for loop is unnecesary
-while ($rs[0] != NULL) # Continue while there's at least 1 result remaining
+while ($rs[0] != NULL) # Continue while there's at least 1 result (the first) remaining
 {
   echo "<div class='productdiv'>
           <div>";
@@ -179,7 +181,9 @@ while ($rs[0] != NULL) # Continue while there's at least 1 result remaining
     $thingy = '';
     if (!is_null($r))
     {
-      $thingy = new Product($r['name'], $r['description'], $r['date'], $r['author'], $r['tags'], $r['id']);
+      $dateobj = new DateTime($r['date'], timezone_open("Pacific/Auckland"));
+      $datestr = $dateobj->format("d/m");
+      $thingy = new Product($r['name'], $r['description'], $datestr, $r['author'], $r['tags'], $r['id']);
       Products::Add($thingy, "thing$i");
       include "product.php";
       dump_var($r);

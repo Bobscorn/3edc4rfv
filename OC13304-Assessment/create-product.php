@@ -1,7 +1,9 @@
 <?php
-# PHP With forms to create Products and add them to the database
-#
-# Addition to database done by sign-in.php around line 54
+/**
+* Just a file containing a form to create a product
+*
+* Actual PHP code done on line 72 in sign-in.php
+*/
  ?>
 
 <form id="create-product" method="post" action="index.php">

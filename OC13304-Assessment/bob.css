@@ -341,7 +341,7 @@ input
   padding: 0;
   margin: 0;
   display: inline-block;
-  width: 79.5%;
+  width: 73.5%;
   height: 20%;
   float: left;
   overflow-x: auto;
@@ -359,7 +359,7 @@ input
   padding: 0;
   margin: 0;
   display: inline-block;
-  width: 19.5%;
+  width: 25.5%;
   height: 20%;
   float: right;
   overflow-x: auto;
@@ -496,6 +496,62 @@ li > input
 {
   width: 25%;
   min-width: 50px;
+}
+
+/***
+* pv stuff is stuff used for viewing a product
+*/
+.pvdiv
+{
+  width: 80%;
+  min-width: 500px;
+  height: 50px;
+  min-height: 500px;
+  display: block;
+  margin: 25px auto;
+  padding: 15px;
+  background-color: #bbb;
+  border-color: rgba(0,0,0,0);
+  border-radius: 7px;
+
+}
+.pvtitle
+{
+  width: 80%;
+  height: 50px;
+  font-size: 2em;
+  display: inline-block;
+}
+.pvdate
+{
+  width: 19%;
+  height: 50px;
+  font-size: 1em;
+  display: inline-block;
+  text-align: right;
+}
+.pvdesc
+{
+  width: 100%;
+  height: 300px;
+  font-size: 1.5em;
+  word-wrap: break-word;
+  border-top: solid 3px #111;
+  border-bottom: solid 3px #111;
+}
+.pvauthor
+{
+  width: 100%;
+  height: 30px;
+  font-size: 1.3em;
+  text-align: right;
+  border-bottom: solid 3px #111;
+}
+.pvtags{
+  width: 100%;
+  height: 50px;
+  font-size: 1.3em;
+  border-bottom: solid 3px #111;
 }
 
 table

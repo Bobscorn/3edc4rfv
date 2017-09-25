@@ -1,6 +1,24 @@
 <?php
 require_once 'tools.php';
-// Checks if form has been submitted
+if ($_SERVER['REQUEST_METHOD'] == 'GET')
+{
+  if (isset($_GET['action']))
+  {
+    switch ($_GET['action'])
+    {
+    case 'view-product':
+
+      $page = 'view-product.php';
+
+      break;
+      case 'home':
+
+        $page = 'home.php';
+        break;
+    }
+  }
+}
+// Checks if form has been submitted via POST
 if ($_SERVER['REQUEST_METHOD'] == 'POST')
 {
   if (DontExist($_POST['formname'])) {$_POST['formname'] = 'none';}
@@ -48,25 +66,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
     case 'Search':
 
       $page = 'search.php';
+      $searchtemp = $_POST['search'];
+      $title = "Search for $searchtemp";
 
       break;
 
     case 'Create Product':
 
-      Debug::Output("create-product", false);
+      Debug::Output("create-product", true);
       if (isset($_POST['product-name']) && $user->CheckIfLoggedIn())
       {
         # Product-name is set, this means a form with product values called this page
         # Post variables, Post because product creation should not be 'bookmarked'
         $pname = $_POST['product-name'];
         $pdesc = isset($_POST['product-desc']) ? MakeSecureSymbols($_POST['product-desc']) : 'No description';
-        $ptags = isset($_POST['product-tags']) ? MakeSecure($_POST['product-tags']) : 'Tagless';
+        $ptags = isset($_POST['product-tags']) ? MakeSecureCommas($_POST['product-tags']) : 'Tagless';
 
         # Non-Post Variables
         $pdateobj = new DateTime(NULL, timezone_open("Pacific/Auckland"));
         $pdate = $pdateobj->format("Y/m/d H:i:s");
         $pauthorid = $user->GetID();
 
+        # Insert data into the products table
         $makeproductquery = "INSERT INTO `products` (`name`,`description`,`date`,`author`) VALUES ('$pname','$pdesc','$pdate','$pauthorid');";
         $madeproduct = $connection->query($makeproductquery);
         dump_var($madeproduct);
@@ -95,8 +116,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
         # Product-name not set, this means user should be directed to create product page
         # Because same 'formname' value is used for directing to product Creation
         # and submitting new product information
-        $page = 'create-product.php';
+        $title = 'Create a Product';
+        $page = $user->CheckIfLoggedIn() ? 'create-product.php' : 0;
+        if (!$page) { unset($page); }
       }
+      break;
+
+    case 'My Products':
+
+      $page = 'my-products.php';
+      $title = 'Your Products';
+
       break;
 
     default:

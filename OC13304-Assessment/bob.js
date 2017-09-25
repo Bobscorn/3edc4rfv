@@ -1,3 +1,5 @@
+// Everything javascript in this website
+
 // This function swaps between login and register form
 function swapForms()
 {
@@ -40,7 +42,13 @@ function togglePHPOutput()
   }
 }
 
+// Change title of page, done here because php can't edit already printed content
+// And php determines title after content might have been printed
+document.getElementById('title').innerHTML = document.getElementById('titlevalue').innerHTML;
+
 // Automatically hide phpoutput after 4 seconds (4000ms)
-setTimeout(function() {
-  document.getElementById('phpoutput').style.display = 'none';
-}, 4000);
+setTimeout(
+  function() {
+    document.getElementById('phpoutput').style.display = 'none';
+  },
+4000);

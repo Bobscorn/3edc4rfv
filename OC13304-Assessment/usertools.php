@@ -1,4 +1,7 @@
-<?php if (!isset($searchtooltip)) $searchtooltip = 'anything'; ?>
+<?php if (!isset($searchtooltip)) $searchtooltip = 'anything';
+# This file is a header that contains the things a logged in person should see,
+# The name is confusing, but not sure what to call it
+ ?>
 <div id='userstuff'><!--
 --><form action='index.php' method='post'><!--
   --><div id ='usermenus'><!--
@@ -10,6 +13,7 @@
   --><div id='otherusermenus' class="menu-parent"><!--
   --><h3 style='text-decoration: none;'>Menu</h3><!--
     --><ul class="menu"><!--
+      --><li><input type="submit" class="submit" style='border:none;border-radius:0;background-color:rgba(0,0,0,0);' name="formname" value="My Products"></li><!--
       --><li><input type="submit" class="submit" style='border:none;border-radius:0;background-color:rgba(0,0,0,0);' name="formname" value="Create Product"></li><!--
       --><li><input type='submit' class='submit' style='border:none;border-radius:0;background-color:rgba(0,0,0,0);' name='formname' value='Logout'></li><!--
     --></ul><!--

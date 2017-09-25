@@ -1,7 +1,8 @@
 <?php
 
 // This will be used to turn debug output of specific functions/segments on or off,
-// As my debug output can be messy and irrelevant at times
+// As my debug output can be messy and irrelevant at times,
+// This cleans it up slightly
 class Debug
 {
   public static $Output = array();
@@ -17,11 +18,12 @@ class Debug
   }
 }
 
+# Just a nice 'easter egg' for the search bar
 $searchtooltips = array("(╯°□°）╯︵ ┻━┻", "٩(⁎❛ᴗ❛⁎)۶", "(͡° ͜ʖ ͡°)", "¯\(°_o)/¯", "( ▀ ͜͞ʖ▀)", "( ͠° ͟ʖ ͡°)", "( ͡°╭͜ʖ╮͡° )", "ᕦ(ò_óˇ)ᕤ", "(^‿^)", "anything", "anything", "anything");
 $searchtooltip = $searchtooltips[array_rand($searchtooltips)];
 
-// DATABASE CONNECTION CLASS
-// WORKING
+// Class to handle connections to a database, this prevents duplicate connections
+// That may arise from including multiple other php files
 class DB
 {
   private static $instance;
@@ -54,7 +56,7 @@ class DB
     self::$database = $name;
   }
 
-  public function SetAll($sname, $uname, $pword, $db)
+  public function SetAll($sname, $uname = self::DefaultUsername, $pword = self::DefaultPassword, $db = self::DefaultDB)
   {
     self::$server = $sname;
     self::$username = $uname;
@@ -62,6 +64,7 @@ class DB
     self::$database = $db;
   }
 
+  # Get an instance with default parameters
   public function GetDefaultInstance()
   {
     if (is_null(self::$instance))
@@ -71,6 +74,7 @@ class DB
     return self::$instance;
   }
 
+  # Get instance with specific parameters
   public function GetInstance()
   {
     if (!is_null(self::$instance))
@@ -89,8 +93,7 @@ class DB
 }
 
 
-// USER CLASS TO STORE SESSION DATA
-// NOT WORKING - ACTUALLY FULLY WORKING
+# Class to contain User based functions
 class User {
   private $username;
   private $connection;
@@ -102,18 +105,11 @@ class User {
 
   public function CheckIfLoggedIn()
   {
-    // Check if session or session variables don't exist
-    // Verify Variables
-    // Query Userid and expiry from token
-    // Check query result
-    // Check if expired
-    // Query the name from userid
-    // Check query result
-    // Set member variable name, return true
-    Debug::$Current = 'logincheck';
-    $_DEBUGOUT['logincheck'] = false; // No debug output
+    # This function checks the timeout of tokens in the database,
+    # and if token matches stored username & password
+    # It doesn't store the state of the User to prevent exploits
+    Debug::Output("logincheck", false);
     callStack();
-    dEcho("In echo check");
     if (!SessionExists())
     {
       session_start();
@@ -132,8 +128,10 @@ class User {
     $getalltokensquery = "SELECT * FROM `usertokens` ORDER BY `id` DESC";
     $results = $conn->query($getalltokensquery);
 
+    # Debug checkpoint displays latest login tokens
     TableResults('margin: 0 auto; width: 542px; overflow-x: scroll; height: 200px; overflow-y: scroll;', $results, 'id', 'token', 'userid', 'expiry');
 
+    # Get token that matches the one stored in session
     $checktokenquery = "SELECT * FROM `usertokens` WHERE `token` = X'$sessiontoken'";
     $result3 = $conn->query($checktokenquery);
     dump_var($conn);
@@ -148,29 +146,29 @@ class User {
     if (Exists($result3))
     {
       $resultarr = $result3->fetch_assoc();
-      dEcho("balls");
+      dEcho("balls"); # Unique echo statement to know what the output is :P
       dump_var($resultarr);
       $thingy = bin2hex($resultarr['token']);
       dEcho("$thingy");
       $expiry = $resultarr['expiry'];
 
       dEcho("Expiry: $expiry");
+      # Database Expiry is currently a string, can't compare time value of strings
       $expiryobj = new DateTime($expiry, timezone_open("Pacific/Auckland"));
       $rightnow = new DateTime(NULL, timezone_open("Pacific/Auckland"));
       if ($rightnow > $expiryobj)
       {
         nEcho("Login Token has expired, Please login again");
-        dump_var($expiryobj);
-        dump_var($rightnow);
+        dump_vars($expiryobj, $rightnow);
         dEcho("Thing");
         $hoobidy = $expiryobj->format("Y/m/d H:i:s");
         $doodah = $rightnow->format("Y/m/d H:i:s");
-        dEcho($hoobidy);
-        dEcho($doodah);
+        dump_vars($hoobidy, $doodah);
         $this->Logout();
         return false;
       }
 
+      # If token hasn't expired
       $userid = $resultarr['userid'];
       $getnamequery = "SELECT `name` FROM `accounts` WHERE `id` = '$userid'";
       $name = $conn->query($getnamequery);
@@ -179,9 +177,7 @@ class User {
       if (Exists($name))
       {
         dEcho("Get Game result:");
-        dump_var($name);
         $usertoken = $_SESSION['usertoken'];
-        dump_var($name);
         $this->username = $name->fetch_assoc()['name'];
         dEcho("Name: $this->username");
         dEcho("Login check returned true");
@@ -205,12 +201,8 @@ class User {
 
   public function Login($name, $password)
   {
-    // Check connection, session, and name + password
-    // Make and Execute Query (not preparing)
-    // Check Query result
-    // Check if passwords match
-    // Get UserID
-    // Create token with expiry and uid, add token to session and database
+    # Check variables this function relies on
+    # (Session, usertoken, username, password and Database connection)
     if (!SessionExists()) { session_start(); }
     if (isset($_SESSION['usertoken'])) { $this->Logout(); }
     if (!isset($name) || !isset($password))
@@ -224,19 +216,20 @@ class User {
       return;
     }
 
+    # Get password and userid to use in later queries
     $conn = $this->connection;
     $getpasswordquery = "SELECT `password`, `id` FROM `accounts` WHERE `name` = '$name'";
     $thing = $conn->query($getpasswordquery);
 
-    $thingrow = $thing->fetch_assoc();
-    $dbpassword = $thingrow['password'];
+    $userdata = $thing->fetch_assoc();
+    $dbpassword = $userdata['password'];
     if (DontExist($dbpassword))
     {
       nEcho("No User by that name");
       return;
     }
 
-    $uid = $thingrow['id'];
+    # Check passwords, then create random 128bit login token with 5 minute expiry
     if (password_verify($password, $dbpassword))
     {
       $token = bin2hex(random_bytes(16));
@@ -245,18 +238,16 @@ class User {
       $expiresin = new DateInterval('PT5M'); // 5 Minutes
       $expiry = date_add($rightnow, $expiresin); // Make expiry 5 minutes from now
 
-      dump_var($expiry);
-      dump_var($expiresin);
-      dump_var($rightnow);
+      dump_vars($expiry, $expiresin, $rightnow);
 
       $expirystring = $expiry->format("Y/m/d H:i:s");
-
+      $uid = $userdata['id'];
       $addtokenquery = "INSERT INTO `usertokens` (`token`,`userid`,`expiry`) VALUES (X'$token','$uid','$expirystring')";
       dump_var($addtokenquery);
 
       $_SESSION['usertoken'] = $token;
       $success = $conn->query($addtokenquery);
-      $this->username = $name;
+      $this->username = $name; # Store name for later use
       if (Exists($success)) { nEcho("Logged in, $name"); }
     }
     else
@@ -265,33 +256,34 @@ class User {
     }
   }
 
+  # Logs the stored user out
+  # Removes token from session, removing token from database should be unnecesary
   public function Logout()
   {
-    // Reset Member Variable
-    // Reset Session Variables
+    # Start session in order to reset the stored token
     if (!SessionExists()) { session_start(); }
     dEcho("Logging out");
     $this->username = '';
-    if (isset($_SESSION['usertoken'])) {
+    if (isset($_SESSION['usertoken']))
+    {
       $_SESSION['usertoken'] = '';
       unset($_SESSION['usertoken']);
+
       dEcho("Unsetting utoken");
       callStack();
     }
     dump_var($_SESSION);
   }
 
+  # Checks for existing account by supplied name,
+  # Creates entry in accounts database if not so, ONLY that
   public function Register($name, $password)
   {
-    // Check connection,
-    // Secure Parameters,
-    // Check for existing account
-    // Register
     if (DontExist($this->connection)) { nEcho("DB Connection is bad"); return; }
     $name     = MakeSecure($name);
     $password = MakeSecure($password);
 
-    $conn       = $this->connection;
+    $conn     = $this->connection;
 
     $checkforexistingaccountquery = "SELECT `id` FROM `accounts` WHERE `name` = '$name'";
     $anotheraccount = $conn->query($checkforexistingaccountquery);
@@ -304,9 +296,8 @@ class User {
     }
 
     $hashedpassword = password_hash($password, PASSWORD_DEFAULT);
-    $registerquery  = "INSERT INTO `accounts` (`name`,`password`)
-                       VALUES ('$name','$hashedpassword')";
-    $success = $conn->query($registerquery);
+    $registerquery  = "INSERT INTO `accounts` (`name`,`password`) VALUES ('$name','$hashedpassword')";
+    $success        = $conn->query($registerquery);
 
     if (Exists($success))
     {
@@ -319,12 +310,9 @@ class User {
 
   }
 
-  public function Search($database, $searchfor)
+  # This function is a failure, search is now done in search.php
+/*public function Search($searchfor, $database = 'products')
   {
-    if (is_null($database))
-    {
-      $database = 'items';
-    }
 
     $searchfor = MakeSecureSymbols($searchfor);
     if (empty($searchfor))
@@ -386,13 +374,15 @@ class User {
     }
 
     return $allresults;
-  }
+  }*/
 
   public function GetName()
   {
     return $this->username;
   }
 
+  # User class doesn't store the id,
+  # Query database for id matching the stored username
   public function GetID()
   {
     if (isset($this->username))
@@ -405,7 +395,7 @@ class User {
   }
 }
 
-
+# Used to encapsulate Product information into a single datatype
 class Product
 {
   public $name;
@@ -428,17 +418,22 @@ class Product
   }
 }
 
+# Used to pass product information between php files
+# Product information could also be stored in the $_SESSION variable
+# But I prefer to not store things in $_SESSION
 class Products
 {
   public static $ProductArray         = array();
   public static $CurrentProductName   = '';
 
+  # Add a product to the array, and set the current product to the one supplied
   public function Add($product, $name)
   {
     self::$ProductArray["$name"]  = $product;
     self::$CurrentProductName     = $name;
   }
 
+  # Get last product added
   public function Get()
   {
     return self::$ProductArray[self::$CurrentProductName];
@@ -458,18 +453,25 @@ function MakeSecure($var)
 
 function MakeSecureSymbols($var)
 {
-  // Replaces all characters except A-Z a-z 0-9 (space) and symbols !"#$%&'()*+,-. with nothing (remove all non Alphanumeric and non symbols)
-  $var = preg_replace("/[^A-Za-z0-9 !-.]/i", "", $var);
-  return $var;
+  // Replaces all characters except A-Z a-z 0-9 (space) and symbols !"#$%&'()*+,-. with nothing (remove all non Alphanumeric and non symbols
+  return preg_replace("/[^A-Za-z0-9 !-.\n]/i", "", $var);
+}
+
+function MakeSecureCommas($var)
+{
+  return preg_replace("/[^A-Za-z0-9 ,]/i", "", $var);
 }
 
 function DontExist($var)
 {
-  return !isset($var) || is_null($var) || $var == '';
+  return !Exists($var);
 }
 
+# Shortens checking if a variable is set, and not ''
+# Also checks if its a mysqli_result and returns whether its empty
 function Exists($var)
 {
+  # Check if its a mysqli_result
   if (method_exists($var, 'fetch_assoc'))
   {
     if (is_null($var->lengths) && $var->num_rows <= 0)
@@ -481,7 +483,7 @@ function Exists($var)
   }
   else
   {
-    return !DontExist($var);
+    return isset($var) && $var != '';
   }
 }
 
@@ -501,7 +503,6 @@ function dump_var($var)
   // Uncomment next line to get debug output
   if (DebugOutputEnabled())
   {
-    #callStack();
     var_dump($var);
     echo "\n";
   }
@@ -548,7 +549,9 @@ function nEcho($var)
   echo "<h4>$var\n</h4>";
 }
 
-function TableResults($formatstring, $mysqliobject)
+# A formatting thing, prints a table with column names supplied after $mysqliobject (arguments 3 onwards)
+# Gives the table css of $formatstring
+function TableResults($formatstring, $mysqliobject/*, column names*/)
 {
   if (!method_exists($mysqliobject, 'fetch_assoc'))
   {
@@ -561,6 +564,7 @@ function TableResults($formatstring, $mysqliobject)
   $args = func_get_args();
   $arr = array_values($args);
   $thing = '';
+  # Start the table
   echo "<div style='$formatstring'>";
   echo "<table>
           <tr>";
@@ -572,46 +576,22 @@ function TableResults($formatstring, $mysqliobject)
   }
   echo "</tr>";
 
+  # While the next row isn't null, print it
+  # Assuming the row has columns equivalent to the column names supplied
   while (!is_null($thing = $mysqliobject->fetch_assoc()))
   {
     echo "<tr>";
     foreach ($thing as $i)
     {
-      if (isBinary($i))
-      {
-        $i = bin2hex($i);
-      }
+      # token database contains binary datatypes, which output incorrectly unless converted to hex
+      if (isBinary($i)) { $i = bin2hex($i); }
       echo "<td>$i</td>";
     }
     echo "</tr>";
   }
-
+  # Close table
   echo "</table>";
   echo "</div>";
-}
-
-function MakeRow()
-{
-  $args = func_get_args();
-  echo "<tr>";
-  for ($i = 0; $i < sizeof($args); $i++)
-  {
-    $thing = $args[$i];
-    echo "<td>$thing</td>";
-  }
-  echo "</tr>";
-}
-
-function MakeTitleRow()
-{
-  $args = func_get_args();
-  echo "<tr>";
-  for ($i = 0; $i < sizeof($args); $i++)
-  {
-    $thing = $args[$i];
-    echo "<th>$thing</th>";
-  }
-  echo "</tr>";
 }
 
 function isBinary($str) {
@@ -619,13 +599,17 @@ function isBinary($str) {
 }
 
 # Algorithm showed on https://stackoverflow.com/questions/2394246/algorithm-to-select-a-single-random-combination-of-values/2394292#2394292
+# Not entirely sure how it works, it isn't used in this website anyway
 function UniqueRandomArray($amount, $cap)
 {
   $thing = array();
   $p = 0;
-  for ($j = $cap - $amount; $j < $cap; $j++)
+
+  # A for loop that iterates $amount times
+  for ($j = $cap - $amount; $j < $cap; $j++, $p++)
   {
     $t = mt_rand(1, $j);
+    # if $t is already in the array, put $j in instead
     if (in_array($t, $thing))
     {
       $thing["$p"] = $j;
@@ -634,7 +618,6 @@ function UniqueRandomArray($amount, $cap)
     {
       $thing["$p"] = $t;
     }
-    $p++;
   }
 }
 
